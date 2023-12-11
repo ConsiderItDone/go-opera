@@ -92,8 +92,20 @@ func (b *GenesisBuilder) AddBlock(br ibr.LlrIdxFullBlockRecord) {
 	b.blocks = append(b.blocks, br)
 }
 
+func (b *GenesisBuilder) Blocks() []ibr.LlrIdxFullBlockRecord {
+	return b.blocks
+}
+
 func (b *GenesisBuilder) AddEpoch(er ier.LlrIdxFullEpochRecord) {
 	b.epochs = append(b.epochs, er)
+}
+
+func (b *GenesisBuilder) Epochs() []ier.LlrIdxFullEpochRecord {
+	return b.epochs
+}
+
+func (b *GenesisBuilder) EvmStore() *evmstore.Store {
+	return b.tmpEvmStore
 }
 
 func (b *GenesisBuilder) SetCurrentEpoch(er ier.LlrIdxFullEpochRecord) {
