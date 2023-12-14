@@ -178,6 +178,20 @@ func TestNetRules() Rules {
 	}
 }
 
+func OninoTestNetRules() Rules {
+	return Rules{
+		Name:      "oninotest",
+		NetworkID: TestNetworkID,
+		Dag:       DefaultDagRules(),
+		Epochs:    DefaultEpochsRules(),
+		Economy:   DefaultEconomyRules(),
+		Blocks: BlocksRules{
+			MaxBlockGas:             20500000,
+			MaxEmptyBlockSkipPeriod: inter.Timestamp(1 * time.Minute),
+		},
+	}
+}
+
 func FakeNetRules() Rules {
 	return Rules{
 		Name:      "fake",

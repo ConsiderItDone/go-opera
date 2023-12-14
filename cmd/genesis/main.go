@@ -11,6 +11,7 @@ import (
 	"github.com/Fantom-foundation/lachesis-base/inter/pos"
 	"github.com/Fantom-foundation/lachesis-base/kvdb/memorydb"
 	"github.com/Fantom-foundation/lachesis-base/lachesis"
+	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -34,6 +35,7 @@ import (
 	"github.com/Fantom-foundation/go-opera/opera/genesisstore"
 	futils "github.com/Fantom-foundation/go-opera/utils"
 	"github.com/Fantom-foundation/go-opera/utils/iodb"
+	"github.com/Fantom-foundation/go-opera/valkeystore"
 )
 
 func main() {
@@ -44,7 +46,7 @@ func main() {
 
 	fmt.Println("Validator num: ", *num)
 
-	rules := opera.TestNetRules()
+	rules := opera.OninoTestNetRules()
 	balance := futils.ToFtm(uint64(*balanceParam))
 	stake := futils.ToFtm(uint64(*stakeParam))
 	epoch := idx.Epoch(2)
@@ -52,13 +54,34 @@ func main() {
 
 	validators := make(gpos.Validators, 0, *num)
 	for i := 1; i <= *num; i++ {
-		key := evmcore.FakeKey(i)
-		fmt.Printf("Private key %d: %x\n", i, crypto.FromECDSA(key))
-		fmt.Printf("Public key %d: %x\n", i, crypto.FromECDSAPub(&key.PublicKey))
+		nodeKey, err := crypto.GenerateKey()
+		if err != nil {
+			utils.Fatalf("Failed to generate node key: %v", err)
+		}
+		fmt.Printf("Node Private key %d: %x\n", i, crypto.FromECDSA(nodeKey))
+		fmt.Printf("Node Public key %d: %x\n", i, crypto.FromECDSAPub(&nodeKey.PublicKey))
+
+		valKeystore := valkeystore.NewDefaultFileRawKeystore(".")
+		key, err := crypto.GenerateKey()
+		if err != nil {
+			utils.Fatalf("Failed to generate key: %v", err)
+		}
+
+		pubkeyraw := crypto.FromECDSAPub(&key.PublicKey)
+		valPublicKey := validatorpk.PubKey{
+			Raw:  pubkeyraw,
+			Type: validatorpk.Types.Secp256k1,
+		}
+		err = valKeystore.Add(valPublicKey, crypto.FromECDSA(key), "123")
+		if err != nil {
+			utils.Fatalf("Failed to create account: %v", err)
+		}
+
+		fmt.Printf("Validator Private key %d: %x\n", i, crypto.FromECDSA(key))
+		fmt.Printf("ValidatorPublic key %d: %x\n", i, valPublicKey.Bytes())
 		fmt.Printf("Address %d: %x\n", i, crypto.PubkeyToAddress(key.PublicKey))
 
 		addr := crypto.PubkeyToAddress(key.PublicKey)
-		pubkeyraw := crypto.FromECDSAPub(&key.PublicKey)
 		validators = append(validators, gpos.Validator{
 			ID:      idx.ValidatorID(i),
 			Address: addr,

@@ -25,7 +25,8 @@ func NewCachedKeystore(backend RawKeystoreI) *CachedKeystore {
 }
 
 func (c *CachedKeystore) Unlocked(pubkey validatorpk.PubKey) bool {
-	_, ok := c.cache[c.idxOf(pubkey)]
+	id := c.idxOf(pubkey)
+	_, ok := c.cache[id]
 	return ok
 }
 
