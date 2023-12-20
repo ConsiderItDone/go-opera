@@ -189,6 +189,11 @@ func OninoTestNetRules() Rules {
 			MaxBlockGas:             20500000,
 			MaxEmptyBlockSkipPeriod: inter.Timestamp(1 * time.Minute),
 		},
+		Upgrades: Upgrades{
+			Berlin: true,
+			London: true,
+			Llr:    true,
+		},
 	}
 }
 

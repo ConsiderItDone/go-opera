@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 
 	"github.com/Fantom-foundation/lachesis-base/hash"
 	"github.com/Fantom-foundation/lachesis-base/inter/idx"
@@ -14,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/rlp"
 
 	"github.com/Fantom-foundation/go-opera/evmcore"
@@ -58,8 +60,12 @@ func main() {
 		if err != nil {
 			utils.Fatalf("Failed to generate node key: %v", err)
 		}
+
+		db, _ := enode.OpenDB("")
+		ln := enode.NewLocalNode(db, nodeKey)
+		en := ln.Node().URLv4()
 		fmt.Printf("Node Private key %d: %x\n", i, crypto.FromECDSA(nodeKey))
-		fmt.Printf("Node Public key %d: %x\n", i, crypto.FromECDSAPub(&nodeKey.PublicKey))
+		fmt.Printf("Node Public key %d: %s\n", i, strings.Trim(en, "enode://"))
 
 		valKeystore := valkeystore.NewDefaultFileRawKeystore(".")
 		key, err := crypto.GenerateKey()
@@ -78,8 +84,8 @@ func main() {
 		}
 
 		fmt.Printf("Validator Private key %d: %x\n", i, crypto.FromECDSA(key))
-		fmt.Printf("ValidatorPublic key %d: %x\n", i, valPublicKey.Bytes())
-		fmt.Printf("Address %d: %x\n", i, crypto.PubkeyToAddress(key.PublicKey))
+		fmt.Printf("Validator Public key %d: %x\n", i, valPublicKey.Bytes())
+		fmt.Printf("Address %d: %x\n\n", i, crypto.PubkeyToAddress(key.PublicKey))
 
 		addr := crypto.PubkeyToAddress(key.PublicKey)
 		validators = append(validators, gpos.Validator{
